@@ -34,12 +34,13 @@ hls = QLabel("ПОШУК ПО ТЕГУ")
 smart = QPushButton("Створити запис")
 samsung = QPushButton("Видалити запис")
 koold = QPushButton("Зберегти запис")
-samsi = QPushButton("Відкріпити до запиту")
+samsi = QPushButton("Відкріпити до запису")
 sims = QPushButton("Додати до запису")
-poco = QPushButton("Шукати запит по тегу")
+poco = QPushButton("Шукати запис по тегу")
 text = QTextEdit()
 old = QListWidget()
 hoold = QListWidget()
+field_tag = QLineEdit("")
 
 
 Onsr = QVBoxLayout()
@@ -60,6 +61,7 @@ Amrs.addLayout(Soon)
 Amrs.addWidget(koold)
 Amrs.addWidget(hls)
 Amrs.addWidget(hoold)
+Amrs.addWidget(field_tag)
 Amrs.addWidget(poco)
 
 mainLine.addLayout(Amrs)
@@ -121,8 +123,68 @@ def add_note():
         with open("notes_data.json", "w", encoding="utf-8") as file:
             json.dump(notes, file, ensure_ascii=False, indent=4)
 
+def add_tag():#кнопка добавити тег
+    if old.selectedItems():
+        key = old.selectedItems()[0].text()
+        tag = field_tag.text()
+        if not tag in notes[key]["теги"]:
+            notes[key]["теги"].append(tag)
+            hoold.addItem(tag)
+            field_tag.clear()
+        with open("notes_data.json", "w", encoding="utf-8") as file:
+            json.dump(notes, file,  ensure_ascii=False)
+        print(notes)
+    else:
+        print("Замітка для додавання тега не обрана!")
 
 
+def del_tag(): #кнопка видалити тег
+    if hoold.selectedItems():
+        key = old.selectedItems()[0].text()
+        tag = hoold.selectedItems()[0].text()
+        notes[key]["теги"].remove(tag)
+        hoold.clear()
+        hoold.addItems(notes[key]["теги"])
+        with open("notes_data.json", "w", encoding="utf-8") as file:
+            json.dump(notes, file, ensure_ascii=False)
+    else:
+        print("Тег для вилучення не обраний!")
+
+
+def search_tag(): #кнопка "шукати замітку за тегом"
+    button_text = poco.text()
+    tag = field_tag.text()
+
+    if button_text == "Шукати запис по тегу":
+        apply_tag_search(tag)
+    elif button_text == "Скинути пошук":
+        reset_search()
+
+def apply_tag_search(tag):
+    notes_filtered = {}
+    for note, value in notes.items():
+        if tag in value["теги"]:
+            notes_filtered[note] = value
+
+    poco.setText("Скинути пошук")
+    old.clear()
+    hoold.clear()
+    old.addItems(notes_filtered)
+
+def reset_search():
+    field_tag.clear()
+    old.clear()
+    hoold.clear()
+    old.addItems(notes)
+    poco.setText("Шукати замітки за тегом")
+
+
+
+koold.clicked.connect(save_note)
+samsung.clicked.connect(del_note)
+sims.clicked.connect(add_tag)
+samsi.clicked.connect(del_tag)
+poco.clicked.connect(search_tag)
 koold.clicked.connect(save_note)
 old.addItems(notes)
 smart.clicked.connect(add_note)
